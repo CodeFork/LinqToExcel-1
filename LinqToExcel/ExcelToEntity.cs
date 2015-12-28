@@ -27,6 +27,18 @@ namespace ExcelToLinq
             }
             edr.IsFirstRowAsColumnNames = false;
         }
+        public ExcelToEntity(System.Web.HttpPostedFileBase File)
+        {
+            if (File == null) throw new ArgumentNullException("HttpPostedFileBase File is null");
+
+            HasHeaders = true;
+            if (File.FileName.Trim().ToLower().EndsWith(".xlsx"))
+                edr = ExcelReaderFactory.CreateOpenXmlReader(File.InputStream);
+            else
+                edr = ExcelReaderFactory.CreateBinaryReader(File.InputStream);
+
+            edr.IsFirstRowAsColumnNames = false;
+        }
 
         public IEnumerable<T> Read<T>(int StartRow = 1, int StartColumn = 1, string SheetName = null) where T : new()
         {
