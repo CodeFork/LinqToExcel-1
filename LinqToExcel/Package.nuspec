@@ -1,14 +1,15 @@
 <?xml version="1.0"?>
-<package >
+<package>
   <metadata>
     <id>ExcelToLinq</id>
-    <version>1.0.0.2</version>
+    <version>1.0.0.5</version>
     <authors>Josue Lopez</authors>
     <owners>Josue Lopez</owners>
     <projectUrl>https://github.com/josuelopezv/LinqToExcel</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Covert an Excel File (.xls and .xlsx) to object oriented IEnumerator</description>
-    <releaseNotes></releaseNotes>
+    <releaseNotes>
+    </releaseNotes>
     <copyright>Copyright 2015</copyright>
     <tags>LINQ EXCEL ENTITY IENUMERABLE</tags>
   </metadata>

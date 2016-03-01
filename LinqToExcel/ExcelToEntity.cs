@@ -6,11 +6,24 @@ using Excel;
 
 namespace ExcelToLinq
 {
+    /// <summary>
+    /// Main Class that converts a Excel file to IEnumerable of the specified entity class
+    /// </summary>
     public class ExcelToEntity : IDisposable
     {
+        /// <summary>
+        /// The excel table has row header with the information
+        /// </summary>
         public bool HasHeaders { get; set; }
-
+        /// <summary>
+        /// Excel Data Reader Interface to convert excel to data table
+        /// </summary>
         IExcelDataReader edr;
+        /// <summary>
+        /// Manual contructor by File stream and excel version type
+        /// </summary>
+        /// <param name="s">Can be a memory stream or file stream or byte array</param>
+        /// <param name="et">Excel type of the file given (binary xls or open format xlsx)</param>
         public ExcelToEntity(Stream s, ExcelType et)
         {
             HasHeaders = true;
@@ -27,6 +40,10 @@ namespace ExcelToLinq
             }
             edr.IsFirstRowAsColumnNames = false;
         }
+        /// <summary>
+        /// Automatic constructor based on html form post multipart input type file
+        /// </summary>
+        /// <param name="File">posted file from asp html request or MVC post action</param>
         public ExcelToEntity(System.Web.HttpPostedFileBase File)
         {
             if (File == null) throw new ArgumentNullException("HttpPostedFileBase File is null");
@@ -39,7 +56,14 @@ namespace ExcelToLinq
 
             edr.IsFirstRowAsColumnNames = false;
         }
-
+        /// <summary>
+        /// Read the data table obtain from the converted excel file and transform to the entity class
+        /// </summary>
+        /// <typeparam name="T">Entity Class to transform to</typeparam>
+        /// <param name="StartRow">Start row from the data table</param>
+        /// <param name="StartColumn">Start column from the data table</param>
+        /// <param name="SheetName">sheet name where to read the data</param>
+        /// <returns></returns>
         public IEnumerable<T> Read<T>(int StartRow = 1, int StartColumn = 1, string SheetName = null) where T : new()
         {
             var dt = getTable(StartRow, StartColumn, SheetName);
@@ -51,7 +75,13 @@ namespace ExcelToLinq
                     yield return GetEntity<T>(r);
             }
         }
-
+        /// <summary>
+        /// internal method to transform the excel file to a data table
+        /// </summary>
+        /// <param name="startRow">Start row from the data table</param>
+        /// <param name="startCol">Start column from the data table</param>
+        /// <param name="sheetName">sheet name where to read the data</param>
+        /// <returns></returns>
         private System.Data.DataTable getTable(int startRow, int startCol, string sheetName)
         {
             var ds = edr.AsDataSet();
@@ -74,13 +104,28 @@ namespace ExcelToLinq
                     {
                         var cname = new String(((string)name).Where(c => char.IsLetterOrDigit(c)).ToArray());
                         if (char.IsDigit(cname.FirstOrDefault())) cname = "_" + cname;
-                        if (!string.IsNullOrWhiteSpace(cname)) dt.Columns[i].ColumnName = cname;
+                        if (!string.IsNullOrWhiteSpace(cname))
+                        {
+                            try
+                            {
+                                dt.Columns[i].ColumnName = cname;
+                            }
+                            catch (System.Data.DuplicateNameException)
+                            {
+                                dt.Columns[i].ColumnName = cname + "_" + i.ToString();
+                            }
+                        }
                     };
                 }
             }
             return dt;
         }
-
+        /// <summary>
+        /// internal method to convert a data row to a data entity
+        /// </summary>
+        /// <typeparam name="t">Entity Class</typeparam>
+        /// <param name="row">Data row to grab the data from</param>
+        /// <returns></returns>
         private t GetEntity<t>(System.Data.DataRow row) where t : new()
         {
             var entity = new t();
@@ -111,7 +156,9 @@ namespace ExcelToLinq
 
             return entity;
         }
-
+        /// <summary>
+        /// implement the garbage colector and close the unmanaged excel to data table reader
+        /// </summary>
         public void Dispose()
         {
             if (!edr.IsClosed)
